@@ -1,20 +1,20 @@
-import streamlit as st
+import gradio as gr
 from ultralytics import YOLO
-import cv2
-from PIL import Image
-import numpy as np
 
-model = YOLO("best.pt")
+# Load your trained YOLO model
+model = YOLO("best.pt")  # update path if needed
 
-st.title("Pakistani Number Plate Detection")
+def detect_number_plate(image):
+    results = model.predict(image)
+    annotated = results[0].plot()  # draw boxes
+    return annotated
 
-uploaded_file = st.file_uploader("Upload a car image", type=["jpg", "jpeg", "png"])
+app = gr.Interface(
+    fn=detect_number_plate,
+    inputs=gr.Image(type="numpy", label="Upload Car Image"),
+    outputs=gr.Image(type="numpy", label="Detected Plates"),
+    title="Pakistani Number Plate Detection 🚗",
+    description="Upload a car image, and the YOLO model will detect Pakistani number plates."
+)
 
-if uploaded_file is not None:
-    image = Image.open(uploaded_file)
-    st.image(image, caption="Uploaded Image", use_column_width=True)
-
-    results = model.predict(np.array(image))
-    annotated = results[0].plot()
-
-    st.image(annotated, caption="Detected Plates", use_column_width=True)
+app.launch()
